@@ -53,3 +53,8 @@ export const formatAndDivideNumber = (num: number): string => {
     return num.toString();
   }
 }
+
+export function getMonthYear(dateString: Date) {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+}

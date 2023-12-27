@@ -5,15 +5,24 @@ import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { sidebarLinks } from '@/constants';
 import { Button } from '@/components/ui/button';
-import { SignedOut, SignedIn, useClerk } from '@clerk/nextjs';
+import { SignedOut, SignedIn, useClerk, useAuth } from '@clerk/nextjs';
 
 const NavContent = () => {
+    const { userId } = useAuth();
     const pathname = usePathname();
 
     return (
         <div className='flex flex-1 flex-col gap-6' >
             {sidebarLinks.map((item) => {
                 const isActive = (pathname.includes(item.route) && item.route.length > 1) || pathname === item.route;
+
+                if (item.route === '/profile') {
+                    if (userId) {
+                        item.route = `${item.route}/${userId}`
+                    } else {
+                        return null;
+                    }
+                }
 
                 return (
                     <Link href={item.route} className={`${isActive ?
