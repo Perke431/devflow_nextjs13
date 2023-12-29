@@ -5,8 +5,9 @@ import NoResults from "@/components/shared/NoResults";
 import QuestionCard from "@/components/cards/QuestionCard";
 import { getSavedQuestions } from "@/lib/actions/user.action";
 import { auth } from '@clerk/nextjs';
+import { SearchParamsProps } from "@/types";
 
-export default async function Collection() {
+export default async function Collection({ searchParams }: SearchParamsProps) {
 
     const { userId } = auth();
 
@@ -14,6 +15,9 @@ export default async function Collection() {
 
     const result = await getSavedQuestions({
         clerkId: userId,
+        searchQuery: searchParams.q,
+        filter: searchParams.filter,
+        page: searchParams.page ? +searchParams.page : 1
     });
 
     return (
@@ -22,7 +26,7 @@ export default async function Collection() {
 
             <div className="mt-11 flex justify-between gap-5 max-sm:flex-col sm:items-center">
                 <LocalSearch
-                    route='/'
+                    route='/collection'
                     iconPosition='left'
                     imgSrc='/assets/icons/search.svg'
                     placeholder="Search questions..."
@@ -35,7 +39,7 @@ export default async function Collection() {
             </div>
 
             <div className="mt-10 flex w-full flex-col gap-6">
-                {result.questions.length > 0 ? result.questions.map((question) => (
+                {result.questions.length > 0 ? result.questions.map((question: any) => (
                     <QuestionCard
                         key={question._id}
                         _id={question._id}

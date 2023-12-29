@@ -4,13 +4,14 @@ import QuestionCard from "@/components/cards/QuestionCard";
 import { getQuestionsByTagId } from "@/lib/actions/tag.actions";
 import { IQuestion } from "@/database/question.model";
 import { URLProps } from "@/types";
+import Pagination from "@/components/shared/Pagination";
 
 export default async function TagDetail({ params, searchParams }: URLProps) {
 
     const result = await getQuestionsByTagId({
         tagId: params.id,
-        page: 1,
-        searchQuery: searchParams.q
+        page: searchParams.page ? +searchParams.page : 1,
+        searchQuery: searchParams.q,
     });
 
     return (
@@ -19,7 +20,7 @@ export default async function TagDetail({ params, searchParams }: URLProps) {
 
             <div className="mt-11 w-full">
                 <LocalSearch
-                    route='/'
+                    route={`/tags/${params.id}`}
                     iconPosition='left'
                     imgSrc='/assets/icons/search.svg'
                     placeholder="Search tag questions..."
@@ -46,6 +47,13 @@ export default async function TagDetail({ params, searchParams }: URLProps) {
                     link='/ask-question'
                     linkTitle='Ask a Question'
                 />}
+            </div>
+
+            <div className='mt-10'>
+                <Pagination
+                    pageNumber={searchParams?.page ? +searchParams.page : 1}
+                    isNext={result.isNext}
+                />
             </div>
         </>
     )

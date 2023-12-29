@@ -1,14 +1,20 @@
 import NoResults from '@/components/shared/NoResults';
+import Pagination from '@/components/shared/Pagination';
 import Filter from '@/components/shared/filter/filter';
 import LocalSearch from '@/components/shared/search/LocalSearch';
 import { TagFilters } from '@/constants/filters';
 import { getAllTags } from '@/lib/actions/tag.actions';
+import { SearchParamsProps } from '@/types';
 import Link from 'next/link';
 import React from 'react'
 
-const Tags = async () => {
+const Tags = async ({ searchParams }: SearchParamsProps) => {
 
-    const result = await getAllTags({});
+    const result = await getAllTags({
+        searchQuery: searchParams.q,
+        filter: searchParams.filter,
+        page: searchParams.page ? +searchParams.page : 1
+    });
 
     return (
         <div className='mx-auto w-full max-w-5xl'>
@@ -44,6 +50,13 @@ const Tags = async () => {
                     <NoResults title='No Tags Found' description='It looks like there are no tags found.' link='/ask-question' linkTitle='Ask a question' />
                 )}
             </section>
+
+            <div className='mt-10'>
+                <Pagination
+                    pageNumber={searchParams?.page ? +searchParams.page : 1}
+                    isNext={result.isNext}
+                />
+            </div>
         </div>
     )
 }

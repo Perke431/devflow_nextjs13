@@ -5,10 +5,16 @@ import { UserFilters } from '@/constants/filters';
 import UserCard from '@/components/cards/UserCard';
 import { getAllUsers } from '@/lib/actions/user.action';
 import Link from 'next/link';
+import { SearchParamsProps } from '@/types';
+import Pagination from '@/components/shared/Pagination';
 
-const Community = async () => {
+const Community = async ({ searchParams }: SearchParamsProps) => {
 
-    const result = await getAllUsers({});
+    const result = await getAllUsers({
+        searchQuery: searchParams.q,
+        filter: searchParams.filter,
+        page: searchParams.page ? +searchParams.page : 1
+    });
 
     return (
         <div className='mx-auto w-full max-w-5xl'>
@@ -37,6 +43,13 @@ const Community = async () => {
                     </div>
                 )}
             </section>
+
+            <div className='mt-10'>
+                <Pagination
+                    pageNumber={searchParams?.page ? +searchParams.page : 1}
+                    isNext={result.isNext}
+                />
+            </div>
         </div>
     )
 }
