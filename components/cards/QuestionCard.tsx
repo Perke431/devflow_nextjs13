@@ -16,7 +16,7 @@ interface QuestionProps {
     }[],
     author: {
         _id: string,
-        clerkId: string,
+        clerkId?: string | null,
         name: string,
         picture: string
     },
