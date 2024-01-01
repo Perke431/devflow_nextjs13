@@ -3,7 +3,7 @@
 import Question from "@/database/question.model";
 import Tag from "@/database/tag.model";
 import { connectToDatabase } from "../mongoose";
-import { GetQuestionsParams, CreateQuestionParams, GetQuestionByIdParams, QuestionVoteParams, DeleteQuestionParams, EditQuestionParams } from "./shared.types";
+import { GetQuestionsParams, CreateQuestionParams, GetQuestionByIdParams, QuestionVoteParams, DeleteQuestionParams, EditQuestionParams, RecommendedParams } from "./shared.types";
 import User from "@/database/user.model";
 import { revalidatePath } from "next/cache";
 import Answer from "@/database/answer.model";
@@ -282,3 +282,70 @@ export async function getHotQuestions () {
         
 //     }
 // }
+
+export async function getRecommendedQuestions(params: RecommendedParams) {
+    try {
+        connectToDatabase();
+
+        const { userId, page = 1, pageSize = 20, searchQuery } = params;
+
+        const user = await User.findOne({ clerkId: userId });
+
+        if (!user) {
+            throw new Error('User not found');
+        }
+
+        const skipAmount = (page - 1) * pageSize;
+
+        const userInteractions = await Interaction.find({ user: user._id })
+        .populate('tags')
+        .exec();
+
+        const userTags = userInteractions.reduce((tags, interaction) => {
+            if (interaction.tags) {
+                tags = tags.concat(interaction.tags);
+            }
+            return tags;
+        }, []);
+
+        const distincUserTagsIds = [
+            // @ts-ignore
+            ...new Set(userTags.map((tag: any) => tag._id)),
+        ];
+
+        const query: FilterQuery<typeof Question> = {
+            $and: [
+                { tags: { $in: distincUserTagsIds } },
+                { author: { $ne: user._id } },
+            ],
+        };
+
+        if (searchQuery) {
+            query.$or = [
+                { title: { $regex: searchQuery, $options: "i" } },
+                { content: { $regex: searchQuery, $options: "i" } },
+            ];
+        }
+
+        const totalQuestions = await Question.countDocuments(query);
+
+        const recommendedQuestions = await Question.find(query)
+        .populate({
+            path: 'tags',
+            model: Tag,
+        })
+        .populate({
+            path: 'author',
+            model: User
+        })
+        .skip(skipAmount)
+        .limit(pageSize)
+
+        const isNext = totalQuestions > skipAmount + recommendedQuestions.length;
+
+        return { questions: recommendedQuestions, isNext };
+    } catch (error) {
+        console.error("Error getting recommended questions:", error);
+        throw error
+    }
+}

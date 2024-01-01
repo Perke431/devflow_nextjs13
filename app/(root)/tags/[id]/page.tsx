@@ -2,7 +2,6 @@ import LocalSearch from "@/components/shared/search/LocalSearch";
 import NoResults from "@/components/shared/NoResults";
 import QuestionCard from "@/components/cards/QuestionCard";
 import { getQuestionsByTagId } from "@/lib/actions/tag.actions";
-import { IQuestion } from "@/database/question.model";
 import { URLProps } from "@/types";
 import Pagination from "@/components/shared/Pagination";
 
@@ -29,7 +28,7 @@ export default async function TagDetail({ params, searchParams }: URLProps) {
             </div>
 
             <div className="mt-10 flex w-full flex-col gap-6">
-                {result.questions.length > 0 ? result.questions.map((question: IQuestion) => (
+                {result.questions.length > 0 ? result.questions.map((question: any) => (
                     <QuestionCard
                         key={question._id}
                         _id={question._id}
